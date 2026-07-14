@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Windows 11 Simulator</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --bg2:#1b2a4a;
+      --glass: rgba(255,255,255,.12);
+      --glass2: rgba(255,255,255,.18);
+      --border: rgba(255,255,255,.16);
+      --text: #f5f7fb;
+      --muted: rgba(245,247,251,.75);
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --radius: 18px;
+      --taskbar-h: 56px;
+      --accent: #4da3ff;
+    }
+    *{ box-sizing:border-box; user-select:none; }
+    html,body{ width:100%; height:100%; margin:0; overflow:hidden; font-family: "Segoe UI", system-ui, sans-serif; color:var(--text); }
+    body{
+      background:
+        radial-gradient(circle at 20% 20%, rgba(77,163,255,.35), transparent 22%),
+        radial-gradient(circle at 80% 25%, rgba(168,85,247,.30), transparent 18%),
+        radial-gradient(circle at 50% 80%, rgba(34,197,94,.22), transparent 20%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+    }
+
+    .desktop{
+      position:relative;
+      width:100vw;
+      height:100vh;
+      overflow:hidden;
+    }
+
+    .icon-grid{
+      position:absolute;
+      inset:24px auto auto 24px;
+      display:grid;
+      grid-template-columns: repeat(4, 88px);
+      gap:18px;
+      z-index:1;
+    }
+    .desktop-icon{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      color:#fff;
+      font-size:12px;
+      text-align:center;
+    }
+    .desktop-icon .ico{
+      width:44px;height:44px;border-radius:12px;
+      background: rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(14px);
+      display:grid;place-items:center;
+      box-shadow: var(--shadow);
+    }
+
+    .taskbar{
+      position:absolute;
+      left:50%;
+      bottom:8px;
+      transform:translateX(-50%);
+      height:var(--taskbar-h);
+      padding:8px 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background: rgba(20,24,34,.55);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      z-index:50;
+    }
+    .tb-btn{
+      width:40px;height:40px;
+      border:none;
+      border-radius:12px;
+      background:transparent;
+      color:var(--text);
+      display:grid;place-items:center;
+      cursor:pointer;
+    }
+    .tb-btn:hover,.tb-btn.active{ background: rgba(255,255,255,.12); }
+    .spacer{ width:8px; }
+
+    .clock{
+      padding:0 10px;
+      font-size:12px;
+      line-height:1.1;
+      text-align:right;
+      min-width:84px;
+      color:var(--text);
+    }
+
+    .panel{
+      position:absolute;
+      bottom:72px;
+      background: rgba(20,24,34,.72);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 20px;
+      backdrop-filter: blur(24px);
+      box-shadow: var(--shadow);
+      z-index:40;
+      overflow:hidden;
+    }
+    .start{
+      left:50%;
+      transform:translateX(-50%);
+      width:680px;
+      max-width: calc(100vw - 24px);
+      height: 620px;
+      padding:18px;
+    }
+    .quick{
+      right:18px;
+      width:320px;
+      padding:16px;
+    }
+    .notifications{
+      right:18px;
+      bottom: 410px;
+      width:320px;
+      padding:16px;
+    }
+
+    .search{
+      width:100%;
+      padding:14px 16px;
+      border:none;
+      border-radius:14px;
+      outline:none;
+      background: rgba(255,255,255,.10);
+      color:var(--text);
+      font-size:14px;
+      margin-bottom:16px;
+    }
+    .section-title{
+      font-size:13px;
+      font-weight:600;
+      color:var(--muted);
+      margin: 0 0 10px;
+    }
+    .apps{
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap:10px;
+    }
+    .app{
+      padding:12px 8px;
+      border-radius:16px;
+      background: rgba(255,255,255,.06);
+      border:1px solid transparent;
+      cursor:pointer;
+      text-align:center;
+      font-size:12px;
+    }
+    .app:hover{ background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); }
+    .app .ico{
+      width:42px;height:42px;border-radius:12px;margin:0 auto 8px;
+      display:grid;place-items:center;
+      background: linear-gradient(135deg, rgba(77,163,255,.9), rgba(168,85,247,.9));
+    }
+    .recommend{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:10px;
+    }
+    .card{
+      padding:14px;
+      border-radius:16px;
+      background: rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.08);
+      min-height:72px;
+    }
+
+    .switches{
+      display:grid;
+      gap:10px;
+    }
+    .switch{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 14px;
+      border-radius:14px;
+      background: rgba(255,255,255,.07);
+    }
+    .toggle{
+      width:46px;height:26px;border-radius:999px;
+      background: rgba(255,255,255,.18);
+      position:relative;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+    .toggle::after{
+      content:"";
+      position:absolute;
+      top:3px; left:3px;
+      width:20px;height:20px;border-radius:50%;
+      background:white;
+      transition:.2s;
+    }
+    .toggle.on{ background: rgba(77,163,255,.75); }
+    .toggle.on::after{ left:23px; }
+
+    .window{
+      position:absolute;
+      width: 760px;
+      height: 480px;
+      border-radius: 18px;
+      background: rgba(22,26,36,.88);
+      border:1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      z-index:20;
+    }
+    .titlebar{
+      height:44px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 10px 0 14px;
+      background: rgba(255,255,255,.05);
+      cursor:move;
+    }
+    .window-body{ padding:16px; height:calc(100% - 44px); color:var(--text); }
+    .win-controls{ display:flex; gap:6px; }
+    .win-btn{
+      width:32px;height:32px;border:none;border-radius:10px;
+      background:transparent;color:var(--text);cursor:pointer;
+    }
+    .win-btn:hover{ background: rgba(255,255,255,.12); }
+    .file-list{ display:grid; gap:8px; }
+    .file-row{
+      padding:10px 12px;
+      border-radius:12px;
+      background: rgba(255,255,255,.06);
+      display:flex;
+      justify-content:space-between;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .hidden{ display:none !important; }
+
+    .start-footer{
+      position:absolute;
+      left:18px; right:18px; bottom:18px;
+      display:flex; justify-content:space-between; align-items:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+  </style>
+</head>
+<body>
+<div id="app" class="desktop" @click="desktopClick">
+  <div class="icon-grid">
+    <div class="desktop-icon" v-for="icon in desktopIcons" :key="icon.name" @dblclick="openWindow(icon.win)">
+      <div class="ico">{{ icon.symbol }}</div>
+      <div>{{ icon.name }}</div>
+    </div>
+  </div>
+
+  <div class="window" v-for="win in windows" :key="win.id"
+       :class="{hidden: !win.open}"
+       :style="{ left: win.x + 'px', top: win.y + 'px', zIndex: win.z }"
+       @mousedown="focus(win)">
+    <div class="titlebar" @mousedown.prevent="startDrag($event, win)">
+      <div>{{ win.title }}</div>
+      <div class="win-controls">
+        <button class="win-btn" @click.stop="win.open=false">—</button>
+        <button class="win-btn" @click.stop="maximize(win)">▢</button>
+        <button class="win-btn" @click.stop="win.open=false">✕</button>
+      </div>
+    </div>
+    <div class="window-body" v-if="win.type==='explorer'">
+      <div class="section-title">Quick access</div>
+      <div class="file-list">
+        <div class="file-row" v-for="f in files" :key="f.name">
+          <span>{{ f.name }}</span><span>{{ f.type }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="window-body" v-else>
+      <h3 style="margin:0 0 10px;">Windows 11 Simulator</h3>
+      <p style="margin:0 0 12px;color:var(--muted);">Built with HTML, CSS, JavaScript, and Vue.</p>
+      <div class="card">Locale: en-US</div>
+    </div>
+  </div>
+
+  <div class="panel start" v-if="showStart" @click.stop>
+    <input class="search" type="text" placeholder="Type here to search" />
+    <div class="section-title">Pinned</div>
+    <div class="apps">
+      <div class="app" v-for="app in pinnedApps" :key="app.name" @click="openWindow(app.win)">
+        <div class="ico">{{ app.symbol }}</div>
+        <div>{{ app.name }}</div>
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:16px;">Recommended</div>
+    <div class="recommend">
+      <div class="card" v-for="item in recommended" :key="item.title">
+        <div style="font-weight:600">{{ item.title }}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">{{ item.subtitle }}</div>
+      </div>
+    </div>
+    <div class="start-footer">
+      <div>User</div>
+      <div>{{ timeString }}</div>
+    </div>
+  </div>
+
+  <div class="panel quick" v-if="showQuick" @click.stop>
+    <div class="section-title">Quick settings</div>
+    <div class="switches">
+      <div class="switch"><span>Wi‑Fi</span><div class="toggle" :class="{on: toggles.wifi}" @click="toggles.wifi=!toggles.wifi"></div></div>
+      <div class="switch"><span>Bluetooth</span><div class="toggle" :class="{on: toggles.bt}" @click="toggles.bt=!toggles.bt"></div></div>
+      <div class="switch"><span>Focus assist</span><div class="toggle" :class="{on: toggles.focus}" @click="toggles.focus=!toggles.focus"></div></div>
+    </div>
+  </div>
+
+  <div class="panel notifications" v-if="showNotif" @click.stop>
+    <div class="section-title">Notifications</div>
+    <div class="card">
+      <div style="font-weight:600">Welcome</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+        This is a Windows 11-style shell simulator.
+      </div>
+    </div>
+  </div>
+
+  <div class="taskbar" @click.stop>
+    <button class="tb-btn" :class="{active: showStart}" @click="toggleStart">⊞</button>
+    <button class="tb-btn" @click="openWindowByType('explorer')">🗂️</button>
+    <button class="tb-btn" @click="openWindowByType('about')">🪟</button>
+    <div class="spacer"></div>
+    <button class="tb-btn" :class="{active: showQuick}" @click="toggleQuick">⚙</button>
+    <button class="tb-btn" :class="{active: showNotif}" @click="toggleNotif">🔔</button>
+    <div class="clock">
+      <div>{{ dateString }}</div>
+      <div>{{ timeString }}</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    const now = new Date();
+    return {
+      showStart: false,
+      showQuick: false,
+      showNotif: false,
+      toggles: { wifi: true, bt: false, focus: false },
+      zTop: 20,
+      desktopIcons: [
+        { name: "This PC", symbol: "🖥️", win: "explorer" },
+        { name: "Recycle Bin", symbol: "🗑️", win: "about" },
+        { name: "Documents", symbol: "📄", win: "explorer" },
+        { name: "Settings", symbol: "⚙️", win: "about" },
+      ],
+      pinnedApps: [
+        { name: "Explorer", symbol: "🗂️", win: "explorer" },
+        { name: "Edge", symbol: "🌐", win: "about" },
+        { name: "Store", symbol: "🛍️", win: "about" },
+        { name: "Photos", symbol: "🖼️", win: "about" },
+        { name: "Mail", symbol: "✉️", win: "about" },
+        { name: "Clock", symbol: "⏰", win: "about" },
+      ],
+      recommended: [
+        { title: "Getting Started", subtitle: "Recent file" },
+        { title: "Windows Tips", subtitle: "Suggested app" }
+      ],
+      files: [
+        { name: "Desktop", type: "Folder" },
+        { name: "Downloads", type: "Folder" },
+        { name: "Report.docx", type: "Document" },
+        { name: "Budget.xlsx", type: "Spreadsheet" },
+      ],
+      windows: [
+        { id: 1, title: "File Explorer", type: "explorer", open: false, x: 180, y: 110, w: 760, h: 480, z: 20 },
+        { id: 2, title: "About Windows", type: "about", open: false, x: 240, y: 140, w: 760, h: 480, z: 21 },
+      ],
+      drag: null,
+      now
+    };
+  },
+  computed: {
+    dateString() {
+      return this.now.toLocaleDateString("en-US", { month:"numeric", day:"numeric", year:"numeric" });
+    },
+    timeString() {
+      return this.now.toLocaleTimeString("en-US", { hour:"numeric", minute:"2-digit" });
+    }
+  },
+  methods: {
+    tick() { this.now = new Date(); },
+    desktopClick(){ this.showStart = false; this.showQuick = false; this.showNotif = false; },
+    toggleStart(){ this.showStart = !this.showStart; this.showQuick = false; this.showNotif = false; },
+    toggleQuick(){ this.showQuick = !this.showQuick; this.showStart = false; this.showNotif = false; },
+    toggleNotif(){ this.showNotif = !this.showNotif; this.showStart = false; this.showQuick = false; },
+    openWindow(type){
+      this.windows.forEach(w => { if(w.type === type) w.open = true; });
+      this.showStart = false;
+    },
+    openWindowByType(type){ this.openWindow(type); },
+    focus(win){ this.zTop += 1; win.z = this.zTop; },
+    maximize(win){
+      if (!win._restore) win._restore = { x: win.x, y: win.y, w: win.w, h: win.h };
+      if (win.w !== window.innerWidth) {
+        win.x = 0; win.y = 0; win.w = window.innerWidth; win.h = window.innerHeight - 72;
+      } else {
+        Object.assign(win, win._restore);
+      }
+    },
+    startDrag(e, win){
+      this.focus(win);
+      this.drag = { win, ox: e.clientX - win.x, oy: e.clientY - win.y };
+      window.addEventListener("mousemove", this.onDrag);
+      window.addEventListener("mouseup", this.stopDrag, { once:true });
+    },
+    onDrag: (e) => {},
+    stopDrag(){ this.drag = null; window.removeEventListener("mousemove", this.onDrag); }
+  },
+  mounted() {
+    this.onDrag = (e) => {
+      if (!this.drag) return;
+      const win = this.drag.win;
+      win.x = Math.max(0, Math.min(window.innerWidth - 120, e.clientX - this.drag.ox));
+      win.y = Math.max(0, Math.min(window.innerHeight - 120, e.clientY - this.drag.oy));
+    };
+    this.timer = setInterval(this.tick, 1000);
+    this.tick();
+  },
+  unmounted(){ clearInterval(this.timer); }
+}).mount("#app");
+</script>
+</body>
+</html>
