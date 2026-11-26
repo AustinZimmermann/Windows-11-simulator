@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Windows 11 シミュレータ (ja-JP)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="theme-light wallpaper-bloom">
+  <!-- 電源・ブート画面 -->
+  <div id="power-screen" class="power-screen hidden">
+    <div class="boot-logo">
+      <svg viewBox="0 0 88 88" width="72" height="72">
+        <rect x="0" y="0" width="41" height="41" fill="#0078D4"/>
+        <rect x="47" y="0" width="41" height="41" fill="#0078D4"/>
+        <rect x="0" y="47" width="41" height="41" fill="#0078D4"/>
+        <rect x="47" y="47" width="41" height="41" fill="#0078D4"/>
+      </svg>
+    </div>
+    <div class="boot-spinner"></div>
+    <div id="power-status-text" class="power-status-text">再起動しています...</div>
+    <button id="power-on-btn" class="power-on-btn hidden">電源を入れる</button>
+  </div>
+
+  <!-- ロック画面 -->
+  <div id="lock-screen" class="lock-screen">
+    <div class="lock-overlay" id="lock-clock-view">
+      <div class="lock-time" id="lock-time">09:41</div>
+      <div class="lock-date" id="lock-date">11月25日 水曜日</div>
+      <div class="lock-hint">クリックまたはスペースキーを押してロックを解除</div>
+    </div>
+    <div class="login-overlay hidden" id="lock-login-view">
+      <div class="login-avatar">
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="currentColor">
+          <path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/>
+        </svg>
+      </div>
+      <div class="login-username">ユーザー (Windows 11)</div>
+      <div class="login-form">
+        <input type="password" id="login-pin" placeholder="PIN (任意・空欄でも可)" maxlength="12" />
+        <button id="login-submit" title="サインイン">→</button>
+      </div>
+      <div class="login-sub">サインイン オプション: PIN / パスワード</div>
+    </div>
+  </div>
+
+  <!-- デスクトップ領域 -->
+  <div id="desktop" class="desktop">
+    <!-- 夜間モードオーバーレイ -->
+    <div id="night-light-overlay" class="night-light-overlay"></div>
+
+    <!-- デスクトップアイコン -->
+    <div id="desktop-icons" class="desktop-icons"></div>
+
+    <!-- コンテキストメニュー（右クリック） -->
+    <div id="context-menu" class="context-menu hidden">
+      <div class="ctx-item" data-action="view-toggle">表示アイコンサイズ切替</div>
+      <div class="ctx-item" data-action="sort-icons">名前の順に並べ替え</div>
+      <div class="ctx-item" data-action="refresh">最新の情報に更新 (F5)</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" data-action="new-folder">新規作成 → フォルダー</div>
+      <div class="ctx-item" data-action="new-txt">新規作成 → テキスト ドキュメント</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" data-action="open-settings">個人用設定</div>
+      <div class="ctx-item" data-action="open-terminal">ターミナルで開く</div>
+    </div>
+
+    <!-- アプリウィンドウコンテナ -->
+    <div id="windows-container" class="windows-container"></div>
+
+    <!-- ウィジェットパネル -->
+    <div id="widgets-panel" class="flyout-panel widgets-panel hidden">
+      <div class="widgets-header">
+        <span id="widgets-date-title">2026年11月25日</span>
+        <span class="widgets-badge">ja-JP</span>
+      </div>
+      <div class="widgets-grid">
+        <div class="widget-card weather-card">
+          <div class="widget-title">天気 — 東京</div>
+          <div class="weather-main">
+            <span class="weather-icon">☀️</span>
+            <span class="weather-temp">15°C</span>
+            <span class="weather-desc">晴れ / 湿度 42%</span>
+          </div>
+          <div class="weather-forecast">
+            <div><span>木</span><span>🌤️ 14°</span></div>
+            <div><span>金</span><span>🌧️ 11°</span></div>
+            <div><span>土</span><span>☀️ 16°</span></div>
+            <div><span>日</span><span>☀️ 17°</span></div>
+          </div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-title">クイックメモ</div>
+          <textarea id="widget-memo" class="widget-memo" placeholder="ここにメモを入力..."></textarea>
+        </div>
+        <div class="widget-card">
+          <div class="widget-title">システムモニター</div>
+          <div class="widget-stat"><span>CPU 使用率</span><span id="widget-cpu">14%</span></div>
+          <div class="progress-bar"><div id="widget-cpu-bar" class="progress-fill" style="width:14%"></div></div>
+          <div class="widget-stat" style="margin-top:8px;"><span>メモリ (16.0 GB)</span><span id="widget-ram">42%</span></div>
+          <div class="progress-bar"><div id="widget-ram-bar" class="progress-fill" style="width:42%"></div></div>
+        </div>
+        <div class="widget-card">
+          <div class="widget-title">日本のニュース</div>
+          <ul class="news-list">
+            <li>次世代AIデスクトップ体験の進化とクラウド連携</li>
+            <li>関東地方は週末にかけて秋晴れの行楽日和に</li>
+            <li>国内ソフトウェア開発における日本語ローカライズ動向</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- スタートメニュー -->
+    <div id="start-menu" class="flyout-panel start-menu hidden">
+      <div class="start-search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="start-search-input" placeholder="アプリ、設定、ドキュメントを検索" />
+      </div>
+      <div class="start-section-header">
+        <span>ピン留め済み</span>
+        <button id="start-all-apps-btn" class="pill-btn">すべてのアプリ &gt;</button>
+      </div>
+      <div id="start-pinned-grid" class="start-pinned-grid"></div>
+      <div class="start-section-header">
+        <span>おすすめ</span>
+      </div>
+      <div id="start-recommended-list" class="start-recommended-list"></div>
+      <div class="start-footer">
+        <div class="start-user">
+          <div class="start-user-avatar">ユ</div>
+          <span>ユーザー</span>
+        </div>
+        <div class="start-power-wrapper">
+          <button id="start-power-btn" class="icon-btn" title="電源">⏻</button>
+          <div id="power-menu" class="power-menu hidden">
+            <div class="power-item" data-power="lock">🔒 ロック</div>
+            <div class="power-item" data-power="sleep">🌙 スリープ</div>
+            <div class="power-item" data-power="shutdown">⏻ シャットダウン</div>
+            <div class="power-item" data-power="restart">🔄 再起動</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- クイック設定フライアウト -->
+    <div id="quick-settings" class="flyout-panel quick-settings hidden">
+      <div class="qs-grid">
+        <button class="qs-tile active" data-qs="wifi">
+          <span class="qs-icon">📶</span>
+          <span class="qs-label">Wi-Fi</span>
+        </button>
+        <button class="qs-tile active" data-qs="bluetooth">
+          <span class="qs-icon">ᛒ</span>
+          <span class="qs-label">Bluetooth</span>
+        </button>
+        <button class="qs-tile" data-qs="airplane">
+          <span class="qs-icon">✈️</span>
+          <span class="qs-label">機内モード</span>
+        </button>
+        <button class="qs-tile" data-qs="battery">
+          <span class="qs-icon">🔋</span>
+          <span class="qs-label">バッテリー節約</span>
+        </button>
+        <button class="qs-tile" data-qs="night">
+          <span class="qs-icon">🌙</span>
+          <span class="qs-label">夜間モード</span>
+        </button>
+        <button class="qs-tile" data-qs="theme">
+          <span class="qs-icon">🌓</span>
+          <span class="qs-label">ダークテーマ</span>
+        </button>
+      </div>
+      <div class="qs-sliders">
+        <div class="qs-slider-row">
+          <span>☀️</span>
+          <input type="range" id="brightness-slider" min="40" max="100" value="100" title="明るさ" />
+          <span id="brightness-val">100%</span>
+        </div>
+        <div class="qs-slider-row">
+          <span>🔊</span>
+          <input type="range" id="volume-slider" min="0" max="100" value="75" title="音量" />
+          <span id="volume-val">75%</span>
+        </div>
+      </div>
+      <div class="qs-footer">
+        <span>🔋 94% 残り約 8 時間</span>
+        <button id="qs-open-settings" class="icon-btn" title="すべての設定">⚙️</button>
+      </div>
+    </div>
+
+    <!-- 通知センター・カレンダー -->
+    <div id="notification-center" class="flyout-panel notification-center hidden">
+      <div class="notif-section">
+        <div class="notif-header">
+          <span>通知</span>
+          <button id="clear-notifs-btn" class="pill-btn">すべてクリア</button>
+        </div>
+        <div id="notif-list" class="notif-list"></div>
+      </div>
+      <div class="calendar-section">
+        <div class="cal-header">
+          <span id="cal-full-date">2026年11月25日 水曜日</span>
+          <div class="cal-nav">
+            <button id="cal-prev" class="icon-btn">▲</button>
+            <button id="cal-next" class="icon-btn">▼</button>
+          </div>
+        </div>
+        <div id="cal-month-label" class="cal-month-label">2026年 11月</div>
+        <div class="cal-weekdays">
+          <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+        </div>
+        <div id="cal-days" class="cal-days"></div>
+      </div>
+    </div>
+
+    <!-- タスクバー -->
+    <div id="taskbar" class="taskbar">
+      <div class="taskbar-left">
+        <button id="tb-widgets-btn" class="tb-widget-btn" title="ウィジェット">
+          <span>☀️</span>
+          <div class="tb-weather-text">
+            <strong>15°C</strong>
+            <span>晴れ</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="taskbar-center">
+        <button id="tb-start-btn" class="tb-icon-btn" title="スタート">
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <rect x="2" y="2" width="9" height="9" rx="1.5" fill="#0078D4"/>
+            <rect x="13" y="2" width="9" height="9" rx="1.5" fill="#0078D4"/>
+            <rect x="2" y="13" width="9" height="9" rx="1.5" fill="#0078D4"/>
+            <rect x="13" y="13" width="9" height="9" rx="1.5" fill="#0078D4"/>
+          </svg>
+        </button>
+        <div id="tb-search-pill" class="tb-search-pill">
+          <span>🔍</span>
+          <span>検索</span>
+        </div>
+        <div id="tb-apps" class="tb-apps"></div>
+      </div>
+
+      <div class="taskbar-right">
+        <button id="tb-ime-btn" class="tb-tray-btn" title="Microsoft IME (日本語 / 半角英数切替)">あ</button>
+        <button id="tb-qs-btn" class="tb-tray-btn" title="クイック設定">
+          <span>📶</span>
+          <span>🔊</span>
+          <span>🔋</span>
+        </button>
+        <button id="tb-clock-btn" class="tb-clock-btn" title="日付と時刻・通知">
+          <span id="tb-time">09:41</span>
+          <span id="tb-date">2026/11/25</span>
+        </button>
+        <div id="tb-show-desktop" class="tb-show-desktop" title="デスクトップの表示"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

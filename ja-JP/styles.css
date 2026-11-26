@@ -1,0 +1,1432 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  font-family: "Yu Gothic UI", "Meiryo", "Hiragino Kaku Gothic ProN", "Segoe UI", sans-serif;
+}
+
+:root {
+  --bg-mica: rgba(243, 243, 243, 0.84);
+  --bg-mica-solid: #f3f3f3;
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --bg-hover: rgba(0, 0, 0, 0.06);
+  --bg-active: rgba(0, 0, 0, 0.1);
+  --text-primary: #1a1a1a;
+  --text-secondary: #5c5c5c;
+  --border-subtle: rgba(0, 0, 0, 0.12);
+  --accent: #0067c0;
+  --accent-hover: #005a9e;
+  --shadow-window: 0 18px 42px rgba(0, 0, 0, 0.28);
+  --shadow-flyout: 0 12px 32px rgba(0, 0, 0, 0.22);
+}
+
+body.theme-dark {
+  --bg-mica: rgba(32, 32, 32, 0.85);
+  --bg-mica-solid: #202020;
+  --bg-card: rgba(45, 45, 45, 0.78);
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-active: rgba(255, 255, 255, 0.14);
+  --text-primary: #f5f5f5;
+  --text-secondary: #b0b0b0;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --accent: #4cc2ff;
+  --accent-hover: #3aa8e0;
+  --shadow-window: 0 18px 46px rgba(0, 0, 0, 0.55);
+  --shadow-flyout: 0 14px 36px rgba(0, 0, 0, 0.5);
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  color: var(--text-primary);
+  background: #0d2149;
+}
+
+/* 壁紙バリエーション */
+body.wallpaper-bloom .desktop,
+body.wallpaper-bloom .lock-screen {
+  background:
+    radial-gradient(circle at 68% 48%, rgba(77, 171, 255, 0.92) 0%, rgba(25, 118, 210, 0.78) 28%, transparent 56%),
+    radial-gradient(circle at 42% 58%, rgba(130, 212, 255, 0.85) 0%, rgba(13, 71, 161, 0.65) 35%, transparent 62%),
+    radial-gradient(circle at 55% 32%, rgba(187, 222, 251, 0.75) 0%, transparent 45%),
+    linear-gradient(135deg, #071938 0%, #0d3b7a 48%, #06132b 100%);
+}
+
+body.wallpaper-darkbloom .desktop,
+body.wallpaper-darkbloom .lock-screen {
+  background:
+    radial-gradient(circle at 62% 46%, rgba(41, 98, 255, 0.72) 0%, rgba(17, 34, 85, 0.6) 32%, transparent 60%),
+    radial-gradient(circle at 38% 60%, rgba(0, 176, 255, 0.45) 0%, transparent 50%),
+    linear-gradient(135deg, #050811 0%, #0b1633 52%, #04070f 100%);
+}
+
+body.wallpaper-sunset .desktop,
+body.wallpaper-sunset .lock-screen {
+  background:
+    radial-gradient(circle at 70% 35%, rgba(255, 183, 77, 0.85) 0%, transparent 48%),
+    radial-gradient(circle at 30% 65%, rgba(233, 30, 99, 0.65) 0%, transparent 55%),
+    linear-gradient(135deg, #1f1135 0%, #6a1b4d 50%, #d84315 100%);
+}
+
+body.wallpaper-forest .desktop,
+body.wallpaper-forest .lock-screen {
+  background:
+    radial-gradient(circle at 65% 40%, rgba(38, 166, 154, 0.75) 0%, transparent 52%),
+    radial-gradient(circle at 35% 65%, rgba(102, 187, 106, 0.55) 0%, transparent 50%),
+    linear-gradient(135deg, #071e1b 0%, #0d3b36 52%, #145349 100%);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 電源・ブート画面 */
+.power-screen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  color: #fff;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.boot-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.power-status-text {
+  font-size: 16px;
+  letter-spacing: 0.04em;
+}
+
+.power-on-btn {
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.power-on-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ロック画面 */
+.lock-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.lock-screen.unlocked {
+  opacity: 0;
+  transform: translateY(-24px);
+  pointer-events: none;
+}
+
+.lock-overlay {
+  text-align: center;
+  margin-top: -120px;
+  cursor: pointer;
+}
+
+.lock-time {
+  font-size: 88px;
+  font-weight: 600;
+  line-height: 1.05;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.lock-date {
+  font-size: 22px;
+  font-weight: 400;
+  margin-top: 8px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.lock-hint {
+  margin-top: 48px;
+  font-size: 13px;
+  opacity: 0.85;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 6px 16px;
+  border-radius: 999px;
+}
+
+.login-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  backdrop-filter: blur(22px);
+  background: rgba(0, 0, 0, 0.32);
+  padding: 36px 48px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.login-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-username {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.login-form {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.login-form input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  padding: 9px 14px;
+  font-size: 14px;
+  width: 220px;
+}
+
+.login-form input::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.login-form button {
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #fff;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.login-form button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.login-sub {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* デスクトップ */
+.desktop {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  transition: filter 0.2s ease;
+}
+
+.night-light-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 148, 41, 0.22);
+  pointer-events: none;
+  z-index: 8500;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.night-light-overlay.active {
+  opacity: 1;
+}
+
+/* デスクトップアイコン */
+.desktop-icons {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  z-index: 10;
+}
+
+.desktop-icon {
+  width: 82px;
+  padding: 8px 4px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.12s ease;
+}
+
+.desktop-icons.large .desktop-icon {
+  width: 98px;
+  padding: 10px 6px;
+}
+
+.desktop-icon:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.desktop-icon.selected {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.desktop-icon .icon-emoji {
+  font-size: 32px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+.desktop-icons.large .desktop-icon .icon-emoji {
+  font-size: 42px;
+}
+
+.desktop-icon .icon-label {
+  font-size: 12px;
+  line-height: 1.25;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  word-break: break-word;
+}
+
+/* 右クリックメニュー */
+.context-menu {
+  position: fixed;
+  min-width: 220px;
+  background: var(--bg-mica);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 5px;
+  box-shadow: var(--shadow-flyout);
+  z-index: 8000;
+}
+
+.ctx-item {
+  padding: 7px 12px;
+  font-size: 13px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.ctx-item:hover {
+  background: var(--bg-hover);
+}
+
+.ctx-sep {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 8px;
+}
+
+/* タスクバー */
+.taskbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: var(--bg-mica);
+  backdrop-filter: blur(26px);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  z-index: 5000;
+}
+
+.taskbar-left,
+.taskbar-center,
+.taskbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tb-widget-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.tb-widget-btn:hover {
+  background: var(--bg-hover);
+}
+
+.tb-weather-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+
+.tb-weather-text span {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.tb-icon-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.12s ease;
+}
+
+.tb-icon-btn:hover {
+  background: var(--bg-hover);
+}
+
+.tb-icon-btn:active {
+  transform: scale(0.92);
+}
+
+.tb-icon-btn.open::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  width: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+}
+
+.tb-icon-btn.focused {
+  background: var(--bg-active);
+}
+
+.tb-icon-btn.focused::after {
+  width: 16px;
+  background: var(--accent);
+}
+
+.tb-search-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.tb-search-pill:hover {
+  background: var(--bg-hover);
+}
+
+.tb-apps {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tb-tray-btn,
+.tb-clock-btn {
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tb-tray-btn:hover,
+.tb-clock-btn:hover {
+  background: var(--bg-hover);
+}
+
+.tb-clock-btn {
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  line-height: 1.2;
+  font-size: 11px;
+}
+
+.tb-show-desktop {
+  width: 6px;
+  height: 32px;
+  border-left: 1px solid var(--border-subtle);
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.tb-show-desktop:hover {
+  background: var(--bg-hover);
+}
+
+/* フライアウトパネル共通 */
+.flyout-panel {
+  position: fixed;
+  background: var(--bg-mica);
+  backdrop-filter: blur(28px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: var(--shadow-flyout);
+  z-index: 4500;
+  animation: flyUp 0.16s ease-out;
+}
+
+@keyframes flyUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* スタートメニュー */
+.start-menu {
+  bottom: 58px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 580px;
+  max-width: 95vw;
+  padding: 24px 28px 16px;
+}
+
+.start-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-bottom: 2px solid var(--accent);
+  border-radius: 999px;
+  padding: 8px 16px;
+  margin-bottom: 20px;
+}
+
+.start-search-box input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.start-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.pill-btn {
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.pill-btn:hover {
+  background: var(--bg-hover);
+}
+
+.start-pinned-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.start-app-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.start-app-item:hover {
+  background: var(--bg-hover);
+}
+
+.start-app-item .app-emoji {
+  font-size: 28px;
+}
+
+.start-app-item .app-name {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.start-recommended-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.rec-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.rec-item:hover {
+  background: var(--bg-hover);
+}
+
+.rec-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.rec-item-title {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.rec-item-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.start-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.start-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.start-user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.start-power-wrapper {
+  position: relative;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.icon-btn:hover {
+  background: var(--bg-hover);
+}
+
+.power-menu {
+  position: absolute;
+  bottom: 38px;
+  right: 0;
+  width: 170px;
+  background: var(--bg-mica-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: var(--shadow-flyout);
+}
+
+.power-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.power-item:hover {
+  background: var(--bg-hover);
+}
+
+/* ウィジェットパネル */
+.widgets-panel {
+  top: 12px;
+  bottom: 58px;
+  left: 12px;
+  width: 440px;
+  max-width: 92vw;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.widgets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.widgets-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.widgets-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.widget-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.widget-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.weather-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weather-icon {
+  font-size: 32px;
+}
+
+.weather-temp {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.weather-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.weather-forecast {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+  font-size: 12px;
+}
+
+.weather-forecast div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.widget-memo {
+  width: 100%;
+  height: 74px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 8px;
+  font-size: 13px;
+  resize: none;
+  outline: none;
+  user-select: text;
+}
+
+.widget-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-active);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.news-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.news-list li {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.news-list li:last-child {
+  border-bottom: none;
+}
+
+/* クイック設定 */
+.quick-settings {
+  bottom: 58px;
+  right: 12px;
+  width: 340px;
+  padding: 18px;
+}
+
+.qs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.qs-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.qs-tile.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.qs-icon {
+  font-size: 18px;
+}
+
+.qs-label {
+  font-size: 11px;
+}
+
+.qs-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.qs-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.qs-slider-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.qs-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 通知センター・カレンダー */
+.notification-center {
+  bottom: 58px;
+  right: 12px;
+  width: 350px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.notif-header,
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.notif-list {
+  max-height: 150px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+}
+
+.notif-item-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.notif-empty {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 18px 0;
+}
+
+.calendar-section {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+
+.cal-month-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.cal-weekdays,
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.cal-weekdays {
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.cal-day {
+  padding: 6px 0;
+  border-radius: 50%;
+}
+
+.cal-day.today {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.cal-day.muted {
+  opacity: 0.35;
+}
+
+/* ウィンドウシステム */
+.win-window {
+  position: absolute;
+  background: var(--bg-mica-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  box-shadow: var(--shadow-window);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 340px;
+  min-height: 240px;
+  animation: winOpen 0.14s ease-out;
+}
+
+@keyframes winOpen {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.win-window.maximized {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: calc(100vh - 48px) !important;
+  border-radius: 0;
+}
+
+.win-window.minimized {
+  display: none;
+}
+
+.win-titlebar {
+  height: 36px;
+  background: var(--bg-mica);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: default;
+}
+
+.win-title-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.win-controls {
+  display: flex;
+  height: 100%;
+}
+
+.win-ctrl-btn {
+  width: 44px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.win-ctrl-btn:hover {
+  background: var(--bg-hover);
+}
+
+.win-ctrl-btn.close:hover {
+  background: #e81123;
+  color: #fff;
+}
+
+.win-body {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  user-select: text;
+}
+
+.win-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+/* アプリ固有スタイル */
+/* 1. エクスプローラー */
+.explorer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.exp-path {
+  flex: 1;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-mica-solid);
+  font-size: 12px;
+}
+
+.explorer-main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.explorer-sidebar {
+  width: 170px;
+  border-right: 1px solid var(--border-subtle);
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.exp-nav-item {
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exp-nav-item:hover,
+.exp-nav-item.active {
+  background: var(--bg-hover);
+}
+
+.explorer-content {
+  flex: 1;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  align-content: start;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.exp-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.exp-item:hover {
+  background: var(--bg-hover);
+}
+
+.exp-item-icon {
+  font-size: 32px;
+}
+
+/* 2. メモ帳 */
+.notepad-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  font-size: 12px;
+}
+
+.notepad-area {
+  flex: 1;
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 14px;
+  background: var(--bg-mica-solid);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  user-select: text;
+}
+
+.notepad-status {
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 3. 電卓 */
+.calc-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 8px;
+}
+
+.calc-display {
+  text-align: right;
+  padding: 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.calc-expr {
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-height: 18px;
+}
+
+.calc-val {
+  font-size: 32px;
+  font-weight: 600;
+  overflow-x: auto;
+}
+
+.calc-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.calc-btn {
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.calc-btn:hover {
+  background: var(--bg-hover);
+}
+
+.calc-btn.eq {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* 4. 設定 */
+.settings-wrap {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.settings-nav {
+  width: 200px;
+  border-right: 1px solid var(--border-subtle);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.set-nav-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.set-nav-item:hover,
+.set-nav-item.active {
+  background: var(--bg-hover);
+  font-weight: 600;
+}
+
+.settings-main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.set-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.wallpaper-swatches {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.wp-swatch {
+  width: 72px;
+  height: 46px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.wp-swatch.active {
+  border-color: var(--accent);
+}
+
+/* 5. Microsoft Edge */
+.edge-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.edge-url {
+  flex: 1;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-mica-solid);
+  color: var(--text-primary);
+  font-size: 12px;
+  user-select: text;
+}
+
+.edge-view {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* 6. ターミナル */
+.term-body {
+  flex: 1;
+  background: #0c0c0c;
+  color: #cccccc;
+  font-family: "Consolas", "MS Gothic", monospace;
+  padding: 12px;
+  font-size: 13px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.term-input-line {
+  display: flex;
+  gap: 6px;
+}
+
+.term-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: inherit;
+  user-select: text;
+}
+
+/* 7. ペイント */
+.paint-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+}
+
+.paint-canvas-wrap {
+  flex: 1;
+  background: #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 12px;
+}
+
+.paint-canvas {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  cursor: crosshair;
+}
